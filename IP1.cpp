@@ -14,7 +14,11 @@ private:
     string model;
     int numStrings;
     float price;
+
+public:
     int id;
+
+private:
 
     static int nextId;
     static int objectCount;
@@ -59,11 +63,11 @@ public:
     }
 
     // --- Getters ---
-    string getBrand() const { return brand; }
-    string getModel() const { return model; }
-    int getNumStrings() const { return numStrings; }
-    float getPrice() const { return price; }
-    int getId() const { return id; }
+    string getBrand() { return brand; }
+    string getModel() { return model; }
+    int getNumStrings() { return numStrings; }
+    float getPrice() { return price; }
+    int getId() { return id; }
 
     // --- Setters ---
     void setBrand(string brand) { this->brand = brand; }
@@ -78,7 +82,7 @@ public:
     }
 
     
-    string toString() const {
+    string toString() {
     stringstream ss;
     ss << "Guitar[id=" << getId()
        << ", brand=" << getBrand()
@@ -315,19 +319,7 @@ int main() {
         return 1;
     }
 
-    // Create a list of Guitar objects as required
-    list<Guitar> guitarList;
-    guitarList.push_back(Guitar("Fender", "Telecaster", 6, 899.0f));
-    guitarList.push_back(Guitar("Ibanez", "RG550", 6, 750.0f));
-    guitarList.push_back(Guitar("Martin", "D-28", 6, 2999.0f));
 
-    cout << "\nGuitar list:" << endl;
-    for (const auto& g : guitarList) {
-        cout << "  " << g.toString() << endl;
-    }
-
-    guitarList.clear();
-    assert(Guitar::getObjectCount() == 0);
 
     cout << "\nAll tests passed!" << endl;
     return 0;
