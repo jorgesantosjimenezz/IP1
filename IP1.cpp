@@ -7,8 +7,9 @@
 
 using namespace std;
 
-
 class Guitar {
+private:
+
     string brand;
     string model;
     int numStrings;
@@ -18,89 +19,98 @@ class Guitar {
     static int nextId;
     static int objectCount;
 
-    void validateNumStrings(int n) {
-        if (n < 4 || n > 12) {
-            throw invalid_argument("numStrings must be between 4 and 12");
-        }
-    }
-
-    void validatePrice(float p) {
-        if (p <= 0) {
-            throw invalid_argument("price must be greater than 0");
-        }
-    }
+    // --- Validation methods ---
+    void validateNumStrings(int n);
+    void validatePrice(float p);
 
 public:
-    //Constructors
-    Guitar(string brand, string model, int numStrings, float price)
-        : brand(brand), model(model) {
-        validateNumStrings(numStrings);
-        validatePrice(price);
-        this->numStrings = numStrings;
-        this->price = price;
+    // --- Constructors ---
+    Guitar(string brand, string model){
+        setBrand(brand);
+        setModel(model);
+        setNumStrings(6);
+        setPrice(100.0f);
         this->id = nextId++;
         objectCount++;
     }
 
-    Guitar(string brand, string model)
-        : brand(brand), model(model), numStrings(6), price(100.0f) {
+    Guitar(string brand, string model, int numStrings, float price){
+        setBrand(brand);
+        setModel(model);
+        setNumStrings(numStrings);
+        setPrice(price);
         this->id = nextId++;
         objectCount++;
     }
 
     // --- Copy constructor ---
-    Guitar(const Guitar& other)
-        : brand(other.brand), model(other.model),
-          numStrings(other.numStrings), price(other.price) {
+    Guitar(const Guitar& other){
+        setBrand(other.brand);
+        setModel(other.model);
+        setNumStrings(other.numStrings);
+        setPrice(other.price);
         this->id = nextId++;
         objectCount++;
     }
 
-    //Destructor
+    // --- Destructor ---
     ~Guitar() {
-        objectCount--;
+    objectCount--;
     }
 
-    //Getters
+    // --- Getters ---
     string getBrand() const { return brand; }
     string getModel() const { return model; }
     int getNumStrings() const { return numStrings; }
     float getPrice() const { return price; }
     int getId() const { return id; }
 
-    //Setters
-    void setBrand(const string& newBrand) { brand = newBrand; }
-    void setModel(const string& newModel) { model = newModel; }
-
-    void setNumStrings(int n) {
-        validateNumStrings(n);
-        numStrings = n;
+    // --- Setters ---
+    void setBrand(string brand) { this->brand = brand; }
+    void setModel(string model) { this->model = model; }
+    void setNumStrings(int numStrings) {
+        validateNumStrings(numStrings);
+        this->numStrings = numStrings;
     }
-
-    void setPrice(float p) {
-        validatePrice(p);
-        price = p;
-    }
-
-    string toString() const {
-        stringstream ss;
-        ss << "Guitar[id=" << id
-           << ", brand=" << brand
-           << ", model=" << model
-           << ", strings=" << numStrings
-           << ", price=" << price << "]";
-        return ss.str();
+    void setPrice(float price) {
+        validatePrice(price);
+        this->price = price;
     }
 
     
-    static int getObjectCount() { return objectCount; }
+    string toString() const {
+    stringstream ss;
+    ss << "Guitar[id=" << getId()
+       << ", brand=" << getBrand()
+       << ", model=" << getModel()
+       << ", strings=" << getNumStrings()
+       << ", price=" << getPrice() << "]";
+    return ss.str();
+}
+
+    // --- Static methods ---
+    static int getObjectCount(){return objectCount;};
 };
 
-
+// --- Static member initialization ---
 int Guitar::nextId = 1;
 int Guitar::objectCount = 0;
 
-//TESTS
+// --- Validation methods ---
+void Guitar::validateNumStrings(int n) {
+    if (n < 4 || n > 12) {
+        throw invalid_argument("NumStrings must be between 4 and 12.");
+    }
+}
+
+void Guitar::validatePrice(float p) {
+    if (p <= 0) {
+        throw invalid_argument("Price must be greater than 0.");
+    }
+}
+
+
+// --- TESTS ---
 
 // test1: create an object, getters return provided values, toString is correct
 void test1() {
@@ -111,10 +121,6 @@ void test1() {
     assert(g.getNumStrings() == 6);
     assert(g.getPrice() == 999.99f);
     assert(g.getId() >= 1);
-
-    string expected = "Guitar[id=" + to_string(g.getId())
-        + ", brand=Fender, model=Stratocaster, strings=6, price="
-        + to_string(999.99f) + "]";
 
     // Verify toString contains all relevant info
     string s = g.toString();
@@ -161,7 +167,7 @@ void test2() {
 
 // test3: check that failed validation throws invalid_argument
 void test3() {
-    // Invalid numStrings (too low)
+    // Invalid numStrings (2)
     bool caught = false;
     try {
         Guitar g("Test", "Model", 2, 100.0f);
@@ -170,7 +176,7 @@ void test3() {
     }
     assert(caught);
 
-    // Invalid numStrings (too high)
+    // Invalid numStrings (15)
     caught = false;
     try {
         Guitar g("Test", "Model", 15, 100.0f);
@@ -179,7 +185,7 @@ void test3() {
     }
     assert(caught);
 
-    // Invalid price (zero)
+    // Invalid price (0)
     caught = false;
     try {
         Guitar g("Test", "Model", 6, 0.0f);
@@ -188,7 +194,7 @@ void test3() {
     }
     assert(caught);
 
-    // Invalid price (negative)
+    // Invalid price (-50)
     caught = false;
     try {
         Guitar g("Test", "Model", 6, -50.0f);
@@ -197,17 +203,17 @@ void test3() {
     }
     assert(caught);
 
-    // Invalid setter: setNumStrings
+    // Invalid setter: setNumStrings (2)
     caught = false;
     try {
         Guitar g("Test", "Model", 6, 100.0f);
-        g.setNumStrings(3);
+        g.setNumStrings(2);
     } catch (const invalid_argument& e) {
         caught = true;
     }
     assert(caught);
 
-    // Invalid setter: setPrice
+    // Invalid setter: setPrice (-10)
     caught = false;
     try {
         Guitar g("Test", "Model", 6, 100.0f);
@@ -237,7 +243,7 @@ void test4() {
     cout << "  test4 passed" << endl;
 }
 
-// test5: create/delete list of objects dynamically, verify objectCount 0→N→0
+// test5: create/delete list of objects dynamically, verify objectCount 0->N->0
 void test5() {
     int countBefore = Guitar::getObjectCount();
     assert(countBefore == 0);
@@ -278,9 +284,6 @@ int main() {
         cerr << "  test1 FAILED: " << e.what() << endl;
         return 1;
     }
-
-    // Clean up objects from test1 (they go out of scope)
-    // Objects from test1 and test2 are local and destroyed automatically.
 
     try {
         test2();
