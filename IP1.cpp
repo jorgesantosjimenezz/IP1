@@ -112,7 +112,7 @@ void Guitar::validatePrice(float p) {
 
 // --- TESTS ---
 
-// test1: create an object, getters return provided values, toString is correct
+// test1: create an object getters return the provided values and toString returns what it must
 void test1() {
     Guitar g("Fender", "Stratocaster", 6, 999.99f);
 
@@ -138,7 +138,7 @@ void test1() {
     cout << "  test1 passed" << endl;
 }
 
-// test2: for every setter, call it and verify old value changes to new one
+// test2: for every public setter call it and check whether the old value properly changes into a new one
 void test2() {
     Guitar g("Yamaha", "FG800", 6, 200.0f);
 
@@ -165,7 +165,7 @@ void test2() {
     cout << "  test2 passed" << endl;
 }
 
-// test3: check that failed validation throws invalid_argument
+// test3: check if failed validation throws and exception of the desired type
 void test3() {
     // Invalid numStrings (2)
     bool caught = false;
@@ -243,7 +243,9 @@ void test4() {
     cout << "  test4 passed" << endl;
 }
 
-// test5: create/delete list of objects dynamically, verify objectCount 0->N->0
+/* test5: create a list of objects for the class dynamically (using new and later delete), and make sure the
+count of objects in memory is valid (0 in the beginning, increases with new and decreases with delete,
+and 0 in the end)*/
 void test5() {
     int countBefore = Guitar::getObjectCount();
     assert(countBefore == 0);
@@ -272,9 +274,8 @@ void test5() {
     cout << "  test5 passed" << endl;
 }
 
-// =============================================================================
-// Main
-// =============================================================================
+// --- MAIN ---
+
 int main() {
     cout << "Running Guitar class tests..." << endl;
 
