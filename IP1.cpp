@@ -7,6 +7,18 @@
 
 using namespace std;
 
+// --- Utility class for validation ---
+class Validator {
+public:
+    static bool isInRange(int value, int min, int max) {
+        return value >= min && value <= max;
+    }
+
+    static bool isNonNegative(float value) {
+        return value >= 0;
+    }
+};
+
 class Guitar {
 private:
 
@@ -23,22 +35,81 @@ private:
     static int nextId;
     static int objectCount;
 
-    // --- Validation methods ---
-    void validateNumStrings(int n);
-    void validatePrice(float p);
-
 public:
     // --- Constructors ---
-    Guitar(string brand, string model){
-        setBrand(brand);
-        setModel(model);
-        setNumStrings(6);
-        setPrice(100.0f);
-        this->id = nextId++;
-        objectCount++;
+    Guitar(string brand, string model) {
+        init(brand, model, 6, 0.0f);
     }
 
-    Guitar(string brand, string model, int numStrings, float price){
+    Guitar(string brand, string model, int numStrings, float price) {
+        init(brand, model, numStrings, price);
+    }
+
+    // --- Copy constructor ---
+    Guitar(const Guitar& other) {
+        init(other.brand, other.model, other.numStrings, other.price);
+    }
+
+    // --- Destructor ---
+    ~Guitar() {
+        objectCount--;
+    }
+
+    // --- Getters ---
+    string getBrand() {
+        return brand;
+    }
+    string getModel() {
+        return model;
+    }
+    int getNumStrings() {
+        return numStrings;
+    }
+    float getPrice() {
+        return price;
+    }
+    int getId() {
+        return id;
+    }
+
+    // --- Setters ---
+    void setBrand(string brand) {
+        this->brand = brand;
+    }
+    void setModel(string model) {
+        this->model = model;
+    }
+    void setNumStrings(int numStrings) {
+        if (!Validator::isInRange(numStrings, 4, 12)) {
+            throw invalid_argument("NumStrings must be between 4 and 12.");
+        }
+        this->numStrings = numStrings;
+    }
+    void setPrice(float price) {
+        if (!Validator::isNonNegative(price)) {
+            throw invalid_argument("Price must be non-negative.");
+        }
+        this->price = price;
+    }
+
+    string toString() {
+        stringstream ss;
+        ss << getId() << ", "
+           << getBrand() << ", "
+           << getModel() << ", "
+           << getNumStrings() << ", "
+           << getPrice();
+        return ss.str();
+    }
+
+    // --- Static methods ---
+    static int getObjectCount() {
+        return objectCount;
+    }
+
+private:
+    // --- Private helper methods ---
+    void init(string brand, string model, int numStrings, float price) {
         setBrand(brand);
         setModel(model);
         setNumStrings(numStrings);
@@ -46,72 +117,13 @@ public:
         this->id = nextId++;
         objectCount++;
     }
-
-    // --- Copy constructor ---
-    Guitar(const Guitar& other){
-        setBrand(other.brand);
-        setModel(other.model);
-        setNumStrings(other.numStrings);
-        setPrice(other.price);
-        this->id = nextId++;
-        objectCount++;
-    }
-
-    // --- Destructor ---
-    ~Guitar() {
-    objectCount--;
-    }
-
-    // --- Getters ---
-    string getBrand() { return brand; }
-    string getModel() { return model; }
-    int getNumStrings() { return numStrings; }
-    float getPrice() { return price; }
-    int getId() { return id; }
-
-    // --- Setters ---
-    void setBrand(string brand) { this->brand = brand; }
-    void setModel(string model) { this->model = model; }
-    void setNumStrings(int numStrings) {
-        validateNumStrings(numStrings);
-        this->numStrings = numStrings;
-    }
-    void setPrice(float price) {
-        validatePrice(price);
-        this->price = price;
-    }
-
-    
-    string toString() {
-    stringstream ss;
-    ss << "Guitar[id=" << getId()
-       << ", brand=" << getBrand()
-       << ", model=" << getModel()
-       << ", strings=" << getNumStrings()
-       << ", price=" << getPrice() << "]";
-    return ss.str();
-}
-
-    // --- Static methods ---
-    static int getObjectCount(){return objectCount;};
 };
 
 // --- Static member initialization ---
 int Guitar::nextId = 1;
 int Guitar::objectCount = 0;
 
-// --- Validation methods ---
-void Guitar::validateNumStrings(int n) {
-    if (n < 4 || n > 12) {
-        throw invalid_argument("NumStrings must be between 4 and 12.");
-    }
-}
 
-void Guitar::validatePrice(float p) {
-    if (p <= 0) {
-        throw invalid_argument("Price must be greater than 0.");
-    }
-}
 
 
 // --- TESTS ---
@@ -130,14 +142,13 @@ void test1() {
     string s = g.toString();
     assert(s.find("Fender") != string::npos);
     assert(s.find("Stratocaster") != string::npos);
-    assert(s.find("Guitar[id=") != string::npos);
 
     // Test second constructor (defaults)
     Guitar g2("Gibson", "Les Paul");
     assert(g2.getBrand() == "Gibson");
     assert(g2.getModel() == "Les Paul");
     assert(g2.getNumStrings() == 6);
-    assert(g2.getPrice() == 100.0f);
+    assert(g2.getPrice() == 0.0f);
 
     cout << "  test1 passed" << endl;
 }
@@ -189,14 +200,14 @@ void test3() {
     }
     assert(caught);
 
-    // Invalid price (0)
+    // Valid price (0 = free/not set)
     caught = false;
     try {
         Guitar g("Test", "Model", 6, 0.0f);
     } catch (const invalid_argument& e) {
         caught = true;
     }
-    assert(caught);
+    assert(!caught);
 
     // Invalid price (-50)
     caught = false;
@@ -284,43 +295,51 @@ int main() {
     cout << "Running Guitar class tests..." << endl;
 
     try {
-        test1();
-    } catch (const exception& e) {
-        cerr << "  test1 FAILED: " << e.what() << endl;
+        try {
+            test1();
+        } catch (const exception& e) {
+            cerr << "  test1 FAILED: " << e.what() << endl;
+            return 1;
+        }
+
+        try {
+            test2();
+        } catch (const exception& e) {
+            cerr << "  test2 FAILED: " << e.what() << endl;
+            return 1;
+        }
+
+        try {
+            test3();
+        } catch (const exception& e) {
+            cerr << "  test3 FAILED: " << e.what() << endl;
+            return 1;
+        }
+
+        try {
+            test4();
+        } catch (const exception& e) {
+            cerr << "  test4 FAILED: " << e.what() << endl;
+            return 1;
+        }
+
+        // test5 needs objectCount == 0, so we run it last after all stack objects are gone
+        try {
+            test5();
+        } catch (const exception& e) {
+            cerr << "  test5 FAILED: " << e.what() << endl;
+            return 1;
+        }
+
+        cout << "\nAll tests passed!" << endl;
+
+    } catch (...) {
+        cerr << "Unexpected exception caught!" << endl;
         return 1;
     }
 
-    try {
-        test2();
-    } catch (const exception& e) {
-        cerr << "  test2 FAILED: " << e.what() << endl;
-        return 1;
-    }
+    // Memory leak check: ensure no objects remain alive
+    assert(Guitar::getObjectCount() == 0);
 
-    try {
-        test3();
-    } catch (const exception& e) {
-        cerr << "  test3 FAILED: " << e.what() << endl;
-        return 1;
-    }
-
-    try {
-        test4();
-    } catch (const exception& e) {
-        cerr << "  test4 FAILED: " << e.what() << endl;
-        return 1;
-    }
-
-    // test5 needs objectCount == 0, so we run it last after all stack objects are gone
-    try {
-        test5();
-    } catch (const exception& e) {
-        cerr << "  test5 FAILED: " << e.what() << endl;
-        return 1;
-    }
-
-
-
-    cout << "\nAll tests passed!" << endl;
     return 0;
 }
