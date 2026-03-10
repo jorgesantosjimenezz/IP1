@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -20,17 +21,14 @@ public:
 };
 
 class Guitar {
-private:
-
+public:
     string brand;
+
+private:
     string model;
     int numStrings;
     float price;
-
-public:
     int id;
-
-private:
 
     static int nextId;
     static int objectCount;
@@ -45,15 +43,25 @@ public:
         init(brand, model, numStrings, price);
     }
 
-    // --- Copy constructor ---
-    Guitar(const Guitar& other) {
-        init(other.brand, other.model, other.numStrings, other.price);
-    }
+
 
     // --- Destructor ---
     ~Guitar() {
         objectCount--;
     }
+
+private:
+    // --- Private helper methods ---
+    void init(string brand, string model, int numStrings, float price) {
+        setBrand(brand);
+        setModel(model);
+        setNumStrings(numStrings);
+        setPrice(price);
+        this->id = nextId++;
+        objectCount++;
+    }
+
+public:
 
     // --- Getters ---
     string getBrand() {
@@ -80,19 +88,21 @@ public:
         this->model = model;
     }
     void setNumStrings(int numStrings) {
-        if (!Validator::isInRange(numStrings, 4, 12)) {
+        if (Validator::isInRange(numStrings, 4, 12)) {
+            this->numStrings = numStrings;
+        } else {
             throw invalid_argument("NumStrings must be between 4 and 12.");
         }
-        this->numStrings = numStrings;
     }
     void setPrice(float price) {
-        if (!Validator::isNonNegative(price)) {
+        if (Validator::isNonNegative(price)) {
+            this->price = price;
+        } else {
             throw invalid_argument("Price must be non-negative.");
         }
-        this->price = price;
     }
 
-    string toString() {
+    string to_String() {
         stringstream ss;
         ss << getId() << ", "
            << getBrand() << ", "
@@ -107,16 +117,7 @@ public:
         return objectCount;
     }
 
-private:
-    // --- Private helper methods ---
-    void init(string brand, string model, int numStrings, float price) {
-        setBrand(brand);
-        setModel(model);
-        setNumStrings(numStrings);
-        setPrice(price);
-        this->id = nextId++;
-        objectCount++;
-    }
+
 };
 
 // --- Static member initialization ---
@@ -139,7 +140,7 @@ void test1() {
     assert(g.getId() >= 1);
 
     // Verify toString contains all relevant info
-    string s = g.toString();
+    string s = g.to_String();
     assert(s.find("Fender") != string::npos);
     assert(s.find("Stratocaster") != string::npos);
 
@@ -343,3 +344,4 @@ int main() {
 
     return 0;
 }
+
